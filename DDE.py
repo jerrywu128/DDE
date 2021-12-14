@@ -5,29 +5,41 @@ import tkinter as tk
 from tkinter import filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import time    
-
+from matplotlib.font_manager import FontProperties
+running = True
+hours = []
+I_K=[]
+J_L=[]
+I_J=[]
+N_M=[]
+fig_5 = []
+num=0
 
 def DDE(file_path):
         df = pd.read_excel(file_path,header = None)
         rows = df.shape[0]-1
         cols = df.shape[1]
-
-        hours = []
-        I_K=[]
-        J_L=[]
-        I_J=[]
-        N_M=[]
-        fig_5 = []
-        num=0
+        global num
+        global running 
+        global hours 
+        global I_K
+        global J_L
+        global I_J
+        global N_M
+        global fig_5
+        
+       
         #plt.ion() #互動效果
         
-        while num<rows:
+        while (num<rows)and(running):
+    
             df = pd.read_excel(file_path,header = None)#更新excel
             rows =df.shape[0]-1#讀取新的資料筆數扣掉標題
             print(rows)
             plt.clf()
             plt.close()
-
+            plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei'] 
+            plt.rcParams['axes.unicode_minus'] = False
 
             fig1 = df.iat[num+1,15]
             fig2 = df.iat[num+1,16]
@@ -35,6 +47,7 @@ def DDE(file_path):
             fig4 = df.iat[num+1,18]
             fig5 = df.iat[num+1,19]
 
+            
             f = plt.figure(figsize=(7,7),dpi=80,linewidth = 2)
             I_K.append(fig1)
             J_L.append(fig2)
@@ -89,25 +102,42 @@ def DDE(file_path):
             plot_widget = canvas.get_tk_widget()
            # plot_widget.pack(side=tk.TOP,fill=tk.BOTH,expand=1)
             plot_widget.place(relwidth=1, relheight=1)
-           
+            
             root.update_idletasks()
             root.update()
             time.sleep(0.5)
+        if num>=rows:
+           num=0
+           hours = []
+           I_K=[]
+           J_L=[]
+           I_J=[]
+           N_M=[]
+           fig_5 = []
         #plt.ioff()
         #plt.draw()
     
 def choose_file():
     file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
     listbox_file.insert(0,file_path)
-    bt2['state']=tk.NORMAL
+    Bt_run['state']=tk.NORMAL
    
 
 def run_fig():
-    bt2['state']=tk.DISABLED
+    global running
+    running = True
+    Bt_stop['state']=tk.NORMAL
+    Bt_run['state']=tk.DISABLED
     DDE(listbox_file.get(0))
-    bt2['state']=tk.NORMAL
+    Bt_run['state']=tk.NORMAL
+    Bt_stop['state']=tk.DISABLED
 
+def fig_stop():
+    global running
+    running = False
 
+    Bt_run['state']=tk.NORMAL
+    Bt_stop['state']=tk.DISABLED
 
 if __name__=="__main__":
     root = tk.Tk()
@@ -119,16 +149,19 @@ if __name__=="__main__":
 
     listbox_file=tk.Listbox(root,justify=tk.LEFT)
     listbox_file.place(relx=0.0,rely=0.05,relwidth=0.5,height=30)
-    bt = tk.Button(root,text='選取檔案',fg='black',command=choose_file)
-    bt.place(relx=0.5,rely=0.05,width=100,height=30)
+    Bt_choose = tk.Button(root,text='選取檔案',fg='black',command=choose_file)
+    Bt_choose.place(relx=0.5,rely=0.05,width=100,height=30)
     
-    bt2 = tk.Button(root,text='執行',fg='black',command=run_fig,state=tk.DISABLED)
-    bt2.place(relx=0.62,rely=0.05,width=70,height=30)
+    Bt_run = tk.Button(root,text='執行',fg='black',command=run_fig,state=tk.DISABLED)
+    Bt_run.place(relx=0.60,rely=0.05,width=60,height=30)
  
-    lb = tk.Label(root,text='自訂值:',fg='black')
-    lb.place(relx=0.7,rely=0.05,width=50,height=30)
+    Bt_stop = tk.Button(root,text='暫停',fg='black',command=fig_stop,state=tk.DISABLED)
+    Bt_stop.place(relx=0.66,rely=0.05,width=60,height=30)
+
+    lb = tk.Label(root,text='自訂值:\nex:i2-j3',fg='black')
+    lb.place(relx=0.73,rely=0.05,width=50,height=30)
     titleString = tk.StringVar()
-    titleString.set("fig5")
+    titleString.set("自訂")
     entry5 = tk.Entry(root, width=20, textvariable=titleString)
-    entry5.place(relx=0.75,rely=0.05,width=100,height=30)
+    entry5.place(relx=0.78,rely=0.05,width=100,height=30)
     root.mainloop()
